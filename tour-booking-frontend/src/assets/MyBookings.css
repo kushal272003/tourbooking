@@ -1,0 +1,337 @@
+.my-bookings-page {
+    min-height: 100vh;
+    background: #f5f5f5;
+    padding: 40px 20px;
+}
+
+.bookings-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.bookings-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.bookings-header h1 {
+    font-size: 36px;
+    color: #333;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.bookings-header p {
+    color: #666;
+    font-size: 16px;
+}
+
+.no-bookings {
+    text-align: center;
+    padding: 80px 20px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.no-bookings-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+}
+
+.no-bookings h3 {
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.no-bookings p {
+    color: #666;
+    font-size: 16px;
+    margin-bottom: 30px;
+}
+
+.btn-explore {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-explore:hover {
+    transform: scale(1.05);
+}
+
+.bookings-grid {
+    display: grid;
+    gap: 25px;
+}
+
+.booking-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.booking-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.booking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.booking-id {
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.status-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.status-pending {
+    background: #ff9800;
+    color: white;
+}
+
+.status-confirmed {
+    background: #4caf50;
+    color: white;
+}
+
+.status-cancelled {
+    background: #f44336;
+    color: white;
+}
+
+.status-completed {
+    background: #2196f3;
+    color: white;
+}
+
+.booking-tour-info {
+    display: flex;
+    gap: 20px;
+    padding: 25px;
+    border-bottom: 1px solid #eee;
+}
+
+.tour-image-small {
+    width: 150px;
+    height: 100px;
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.tour-image-small img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.tour-details-small {
+    flex: 1;
+}
+
+.tour-details-small h3 {
+    font-size: 20px;
+    color: #333;
+    margin-bottom: 12px;
+    font-weight: 700;
+}
+
+.tour-meta-small {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.meta-item-small {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #666;
+}
+
+.meta-item-small .icon {
+    color: #667eea;
+}
+
+.booking-details {
+    padding: 25px;
+    background: #f9f9f9;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-row .label {
+    color: #666;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.detail-row .value {
+    color: #333;
+    font-weight: 500;
+}
+
+.payment-status {
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.payment-status.paid {
+    background: #4caf50;
+    color: white;
+}
+
+.payment-status.pending {
+    background: #ff9800;
+    color: white;
+}
+
+.total-price-row {
+    padding-top: 15px;
+    margin-top: 10px;
+    border-top: 2px solid #667eea;
+}
+
+.total-price {
+    font-size: 24px;
+    font-weight: 700;
+    color: #667eea;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.booking-actions {
+    display: flex;
+    gap: 10px;
+    padding: 20px 25px;
+}
+
+.btn-view, .btn-cancel, .btn-pay {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-view {
+    background: #667eea;
+    color: white;
+}
+
+.btn-view:hover {
+    background: #5568d3;
+}
+
+.btn-cancel {
+    background: #f44336;
+    color: white;
+}
+
+.btn-cancel:hover {
+    background: #d32f2f;
+}
+
+.btn-cancel:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-pay {
+    background: #4caf50;
+    color: white;
+}
+
+.btn-pay:hover {
+    background: #45a049;
+}
+
+.error-box {
+    background: #fee;
+    color: #c33;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    margin-bottom: 30px;
+    border-left: 4px solid #c33;
+}
+
+.loading-page {
+    text-align: center;
+    padding: 100px 20px;
+    font-size: 18px;
+    color: #667eea;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .booking-tour-info {
+        flex-direction: column;
+    }
+
+    .tour-image-small {
+        width: 100%;
+        height: 200px;
+    }
+
+    .tour-meta-small {
+        flex-direction: column;
+    }
+
+    .booking-actions {
+        flex-direction: column;
+    }
+
+    .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+}
