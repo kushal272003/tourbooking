@@ -5,7 +5,6 @@ import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -17,33 +16,26 @@ public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @ManyToOne
     @JoinColumn(name = "tour_id", nullable = false)
     private Tour tour;
-
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
     @ManyToOne
     @JoinColumn(name = "booking_id")
     private Booking booking;
-
     @NotNull(message = "Rating is required")
     @Min(value = 1, message = "Rating must be at least 1")
     @Max(value = 5, message = "Rating must be at most 5")
     @Column(nullable = false)
     private Integer rating;
-
     @NotBlank(message = "Review comment is required")
     @Size(min = 10, max = 1000, message = "Review must be between 10 and 1000 characters")
     @Column(columnDefinition = "TEXT")
     private String comment;
-
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
-
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 

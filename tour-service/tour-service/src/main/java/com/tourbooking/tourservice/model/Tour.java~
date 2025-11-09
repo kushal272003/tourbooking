@@ -71,11 +71,6 @@ public class Tour {
     @Column(length = 500)
     private String imageUrl;
 
-    @Column(length = 500)
-    private String imageUrl2;
-    @Column(length = 500)
-    private String imageUrl3;
-
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
@@ -215,22 +210,6 @@ public class Tour {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
-    }
-
-    public String getImageUrl2() {
-        return imageUrl2;
-    }
-
-    public void setImageUrl2(String imageUrl2) {
-        this.imageUrl2 = imageUrl2;
-    }
-
-    public String getImageUrl3() {
-        return imageUrl3;
-    }
-
-    public void setImageUrl3(String imageUrl3) {
-        this.imageUrl3 = imageUrl3;
     }
 
     public LocalDateTime getCreatedAt() {

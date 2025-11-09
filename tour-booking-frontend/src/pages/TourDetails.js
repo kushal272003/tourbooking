@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import tourService from "../services/tourService";
 import bookingService from "../services/bookingService";
+import paymentService from "../services/paymentService";
 import {
   FaMapMarkerAlt,
   FaCalendar,
@@ -22,11 +23,15 @@ const TourDetails = () => {
   const { user, isAuthenticated } = useAuth();
 
   const [tour, setTour] = useState(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [numberOfSeats, setNumberOfSeats] = useState(1);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [paymentMode, setPaymentMode] = useState(false);
+  const [createdBooking, setCreatedBooking] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [ratingStats, setRatingStats] = useState({
     averageRating: 0,
@@ -44,19 +49,32 @@ const TourDetails = () => {
     fetchReviews();
   }, [id]);
 
+ useEffect(() => {
+  if (!tour) return;
+
+  const images = [tour.imageUrl, tour.imageUrl2, tour.imageUrl3].filter(Boolean);
+  if (images.length <= 1) return;
+
+  const interval = setInterval(() => {
+    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+  }, 7000); // ⏱ every 10 seconds
+
+  return () => clearInterval(interval);
+}, [tour]);
+
+
   const fetchTourDetails = async () => {
     setLoading(true);
     setError("");
-   
 
     try {
-      console.log("Fetching tour with ID:", id); // Debug log
+      console.log("Fetching tour with ID:", id);
       const data = await tourService.getTourById(id);
-      console.log("Tour data received:", data); // Debug log
+      console.log("Tour data received:", data);
       setTour(data);
     } catch (err) {
-      console.error("Error fetching tour:", err); // Debug log
-      console.error("Error response:", err.response); // Debug log
+      console.error("Error fetching tour:", err);
+      console.error("Error response:", err.response);
       setError(
         err.response?.data?.message ||
           err.response?.data ||
@@ -66,64 +84,64 @@ const TourDetails = () => {
       setLoading(false);
     }
   };
-   const fetchReviews = async () => {
+
+  const fetchReviews = async () => {
     try {
-        const reviewsData = await reviewService.getTourReviews(id);
-        setReviews(reviewsData);
-        
-        const stats = await reviewService.getTourRatingStats(id);
-        setRatingStats(stats);
+      const reviewsData = await reviewService.getTourReviews(id);
+      setReviews(reviewsData);
+
+      const stats = await reviewService.getTourRatingStats(id);
+      setRatingStats(stats);
     } catch (err) {
-        console.error('Error fetching reviews:', err);
+      console.error("Error fetching reviews:", err);
     }
-};
+  };
+
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!isAuthenticated) {
-        alert('Please login to write a review');
-        navigate('/login');
-        return;
+      alert("Please login to write a review");
+      navigate("/login");
+      return;
     }
 
     if (reviewFormData.comment.trim().length < 10) {
-        alert('Review must be at least 10 characters long');
-        return;
+      alert("Review must be at least 10 characters long");
+      return;
     }
 
     setReviewSubmitting(true);
 
     try {
-        await reviewService.createReview(
-            tour.id,
-            user.id,
-            reviewFormData.rating,
-            reviewFormData.comment
-        );
-        
-        alert('Review submitted successfully!');
-        setShowReviewForm(false);
-        setReviewFormData({ rating: 5, comment: '' });
-        fetchReviews(); // Refresh reviews
-        
-    } catch (err) {
-        alert(err.response?.data || 'Failed to submit review. You may have already reviewed this tour.');
-    } finally {
-        setReviewSubmitting(false);
-    }
-};
+      await reviewService.createReview(
+        tour.id,
+        user.id,
+        reviewFormData.rating,
+        reviewFormData.comment
+      );
 
+      alert("Review submitted successfully!");
+      setShowReviewForm(false);
+      setReviewFormData({ rating: 5, comment: "" });
+      fetchReviews();
+    } catch (err) {
+      alert(
+        err.response?.data ||
+          "Failed to submit review. You may have already reviewed this tour."
+      );
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
+
+  // FIXED: Payment-First Flow
   const handleBooking = async () => {
     if (!isAuthenticated) {
       alert("Please login to book a tour");
       navigate("/login");
       return;
     }
-
-    console.log("User:", user); // Debug log
-    console.log("User ID:", user.id); // Debug log
-    console.log("Tour ID:", tour.id); // Debug log
-    console.log("Number of Seats:", numberOfSeats); // Debug log
 
     if (!user.id) {
       alert("User ID not found. Please logout and login again.");
@@ -137,56 +155,248 @@ const TourDetails = () => {
 
     setBookingLoading(true);
     setError("");
+    setPaymentMode(true);
 
     try {
+      console.log("🚀 Starting Payment-First flow...");
+
+      // Step 1: Create booking (PENDING status, not confirmed yet)
+      console.log("📝 Creating PENDING booking...");
       const booking = await bookingService.createBooking(
         user.id,
         tour.id,
         numberOfSeats
       );
-      console.log("Booking response:", booking); // Debug log
-      setBookingSuccess(true);
 
-      fetchTourDetails();
+      console.log("✅ PENDING Booking created:", booking);
+      setCreatedBooking(booking);
 
-      setTimeout(() => {
-        navigate("/my-bookings");
-      }, 3000);
+      // Step 2: Immediately initiate payment (no delay)
+      await initiatePayment(booking);
     } catch (err) {
-      console.error("Booking error:", err); // Debug log
-      console.error("Error response:", err.response); // Debug log
-      setError(
+      console.error("❌ Booking/Payment error:", err);
+      const errorMessage =
         err.response?.data?.message ||
-          err.response?.data ||
-          "Booking failed. Please try again."
-      );
+        err.response?.data ||
+        "Failed to initiate booking. Please try again.";
+      setError(errorMessage);
+      setPaymentMode(false);
     } finally {
       setBookingLoading(false);
     }
   };
+
+  // NEW: Initiate payment process
+  const initiatePayment = async (booking) => {
+    setPaymentMode(true);
+
+    try {
+      console.log("🚀 Initiating payment for booking:", booking.id);
+
+      // Step 1: Create Razorpay order
+      const orderData = await paymentService.createPaymentOrder(booking.id);
+      console.log("✅ Payment order created:", orderData);
+
+      // Step 2: Configure Razorpay options
+      const razorpayOptions = {
+        key: orderData.key,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "Tour Booking Service",
+        description: `Payment for ${booking.tour.title}`,
+        image: "/logo192.png",
+        order_id: orderData.orderId,
+        config: {
+          display: {
+            blocks: {
+              upi: {
+                name: "Pay using UPI",
+                instruments: [
+                  {
+                    method: "upi",
+                  },
+                ],
+              },
+              card: {
+                name: "Credit/Debit Card",
+                instruments: [
+                  {
+                    method: "card",
+                  },
+                ],
+              },
+              netbanking: {
+                name: "Net Banking",
+                instruments: [
+                  {
+                    method: "netbanking",
+                  },
+                ],
+              },
+            },
+            sequence: ["upi", "card", "netbanking"],
+            preferences: {
+              show_default_blocks: true,
+            },
+          },
+        },
+        prefill: {
+          name: orderData.userName,
+          email: orderData.userEmail,
+          contact: orderData.userPhone,
+        },
+        theme: {
+          color: "#667eea",
+        },
+
+        // 🆕 Add this part to explicitly enable all payment modes
+        method: {
+          upi: true,
+          card: true,
+          wallet: true,
+          netbanking: true,
+        },
+
+        handler: async (response) => {
+          console.log("💳 Payment successful:", response);
+          await handlePaymentSuccess(response, booking.id, booking.totalPrice);
+        },
+
+        modal: {
+          ondismiss: async () => {
+            console.log("❌ Payment cancelled");
+            await handlePaymentCancel();
+          },
+          escape: true,
+          animation: true,
+          confirm_close: true,
+        },
+
+        notes: {
+          bookingId: booking.id,
+          tourId: booking.tour.id,
+        },
+      };
+
+      // Step 3: Open Razorpay checkout
+      console.log("🔓 Opening Razorpay checkout...");
+      await paymentService.openRazorpayCheckout(razorpayOptions);
+    } catch (err) {
+      console.error("❌ Payment initiation failed:", err);
+      const errorMessage =
+        err.response?.data?.message ||
+        err.response?.data ||
+        err.message ||
+        "Failed to initiate payment";
+      setError(errorMessage);
+      setPaymentMode(false);
+
+      // Navigate to failure page
+      navigate("/payment-failure", {
+        state: {
+          error: errorMessage,
+          bookingId: booking.id,
+        },
+      });
+    }
+  };
+
+  // FIXED: Handle payment success - Confirm booking only after payment
+  const handlePaymentSuccess = async (razorpayResponse, bookingId) => {
+    try {
+      console.log("✅ Verifying payment...");
+
+      const verificationData = {
+        razorpayOrderId: razorpayResponse.razorpay_order_id,
+        razorpayPaymentId: razorpayResponse.razorpay_payment_id,
+        razorpaySignature: razorpayResponse.razorpay_signature,
+        bookingId: bookingId,
+      };
+
+      await paymentService.verifyPayment(verificationData);
+      console.log("✅ Payment verified");
+
+      // IMPORTANT: Confirm booking ONLY after payment success
+      await bookingService.confirmBooking(bookingId);
+      console.log("✅ Booking CONFIRMED after payment");
+
+      // Refresh tour details (seats now deducted)
+      fetchTourDetails();
+
+      // Navigate to success page
+      navigate("/payment-success", {
+        state: {
+          paymentId: razorpayResponse.razorpay_payment_id,
+          orderId: razorpayResponse.razorpay_order_id,
+          bookingId: bookingId,
+          amount: tour.price * numberOfSeats,
+        },
+      });
+    } catch (err) {
+      console.error("❌ Payment verification failed:", err);
+
+      // IMPORTANT: Cancel the booking if payment fails
+      try {
+        await bookingService.cancelBooking(bookingId);
+        console.log("⚠️ Booking cancelled due to payment failure");
+      } catch (cancelErr) {
+        console.error("Failed to cancel booking:", cancelErr);
+      }
+
+      navigate("/payment-failure", {
+        state: {
+          error: err.response?.data || "Payment verification failed",
+          bookingId: bookingId,
+          orderId: razorpayResponse.razorpay_order_id,
+        },
+      });
+    }
+  };
+
+  // FIXED: Handle payment cancel - Cancel booking
+  const handlePaymentCancel = async () => {
+    setPaymentMode(false);
+
+    // If booking was created, cancel it
+    if (createdBooking) {
+      try {
+        await bookingService.cancelBooking(createdBooking.id);
+        console.log("⚠️ Booking cancelled - Payment was cancelled by user");
+      } catch (err) {
+        console.error("Failed to cancel booking:", err);
+      }
+    }
+
+    setError(
+      "Payment was cancelled. No booking was made. Try again when ready."
+    );
+    setCreatedBooking(null);
+
+    // Refresh tour to restore seats
+    fetchTourDetails();
+  };
+
   const calculateTotalPrice = () => {
     return tour ? (tour.price * numberOfSeats).toLocaleString("en-IN") : 0;
   };
+
   const renderStars = (rating) => {
     const stars = [];
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.5;
-    
+
     for (let i = 1; i <= 5; i++) {
-        if (i <= fullStars) {
-            stars.push(<FaStar key={i} className="star filled" />);
-        } else if (i === fullStars + 1 && hasHalfStar) {
-            stars.push(<FaStarHalfAlt key={i} className="star filled" />);
-        } else {
-            stars.push(<FaRegStar key={i} className="star empty" />);
-        }
+      if (i <= fullStars) {
+        stars.push(<FaStar key={i} className="star filled" />);
+      } else if (i === fullStars + 1 && hasHalfStar) {
+        stars.push(<FaStarHalfAlt key={i} className="star filled" />);
+      } else {
+        stars.push(<FaRegStar key={i} className="star empty" />);
+      }
     }
-    
+
     return <div className="stars-container">{stars}</div>;
-};
-
-
-  
+  };
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-IN", {
@@ -195,7 +405,6 @@ const TourDetails = () => {
       year: "numeric",
     });
   };
-  
 
   if (loading) {
     return <div className="loading-page">Loading tour details...</div>;
@@ -226,131 +435,195 @@ const TourDetails = () => {
         {bookingSuccess && (
           <div className="success-message">
             <FaCheckCircle className="success-icon" />
-            <h3>Booking Successful!</h3>
-            <p>Your tour has been booked. Redirecting to your bookings...</p>
+            <h3>Payment in Progress</h3>
+            <p>
+              Complete payment to confirm your booking. Don't close the payment
+              window.
+            </p>
           </div>
         )}
 
-        <div className="tour-hero">
-          <img src={imageUrl} alt={tour.title} />
-          <div className="tour-badge-large">
-            {tour.availableSeats > 0 ? (
-              <span className="badge-available">Available</span>
-            ) : (
-              <span className="badge-sold-out">Sold Out</span>
-            )}
-          </div>
+       <div className="tour-hero slideshow">
+  {(() => {
+    const images = [
+      tour.imageUrl,
+      tour.imageUrl2,
+      tour.imageUrl3
+    ].filter(Boolean);
+
+    if (images.length === 0) {
+      return (
+        <img
+          src="https://via.placeholder.com/800x400?text=No+Image+Available"
+          alt="Default Tour"
+          className="slide-image"
+        />
+      );
+    }
+
+    return (
+      <>
+        {images.map((img, index) => (
+          <img
+            key={index}
+            src={img}
+            alt={`Tour ${index + 1}`}
+            className={`slide-image ${index === currentImageIndex ? 'active' : ''}`}
+          />
+        ))}
+        <div className="slide-indicators">
+          {images.map((_, index) => (
+            <span
+              key={index}
+              className={`dot ${index === currentImageIndex ? 'active' : ''}`}
+              onClick={() => setCurrentImageIndex(index)}
+            ></span>
+          ))}
         </div>
+
+        <div className="tour-badge-large">
+          {tour.availableSeats > 0 ? (
+            <span className="badge-available">Available</span>
+          ) : (
+            <span className="badge-sold-out">Sold Out</span>
+          )}
+        </div>
+      </>
+    );
+  })()}
+</div>
 
         <div className="tour-content-grid">
           <div className="tour-main-content">
-            <h1 className="tour-title">{tour.title}</h1>      {/* Reviews Section */}
-<div className="reviews-section">
-    <div className="reviews-header">
-        <div className="rating-summary">
-            <div className="avg-rating">
-                <span className="rating-number">{ratingStats.averageRating.toFixed(1)}</span>
-                {renderStars(ratingStats.averageRating)}
-            </div>
-            <p className="reviews-count">
-                Based on {ratingStats.totalReviews} review{ratingStats.totalReviews !== 1 ? 's' : ''}
-            </p>
-        </div>
+            <h1 className="tour-title">{tour.title}</h1>
 
-        {isAuthenticated && !showReviewForm && (
-            <button 
-                className="btn-write-review"
-                onClick={() => setShowReviewForm(true)}
-            >
-                Write a Review
-            </button>
-        )}
-    </div>
-
-    {/* Review Form */}
-    {showReviewForm && (
-        <div className="review-form-container">
-            <h3>Write Your Review</h3>
-            <form onSubmit={handleReviewSubmit} className="review-form">
-                <div className="form-group">
-                    <label>Your Rating</label>
-                    <div className="rating-input">
-                        {[1, 2, 3, 4, 5].map(star => (
-                            <FaStar
-                                key={star}
-                                className={`star-input ${star <= reviewFormData.rating ? 'active' : ''}`}
-                                onClick={() => setReviewFormData({...reviewFormData, rating: star})}
-                            />
-                        ))}
-                        <span className="rating-text">{reviewFormData.rating} star{reviewFormData.rating !== 1 ? 's' : ''}</span>
-                    </div>
+            {/* Reviews Section */}
+            <div className="reviews-section">
+              <div className="reviews-header">
+                <div className="rating-summary">
+                  <div className="avg-rating">
+                    <span className="rating-number">
+                      {ratingStats.averageRating.toFixed(1)}
+                    </span>
+                    {renderStars(ratingStats.averageRating)}
+                  </div>
+                  <p className="reviews-count">
+                    Based on {ratingStats.totalReviews} review
+                    {ratingStats.totalReviews !== 1 ? "s" : ""}
+                  </p>
                 </div>
 
-                <div className="form-group">
-                    <label>Your Review</label>
-                    <textarea
+                {isAuthenticated && !showReviewForm && (
+                  <button
+                    className="btn-write-review"
+                    onClick={() => setShowReviewForm(true)}
+                  >
+                    Write a Review
+                  </button>
+                )}
+              </div>
+
+              {showReviewForm && (
+                <div className="review-form-container">
+                  <h3>Write Your Review</h3>
+                  <form onSubmit={handleReviewSubmit} className="review-form">
+                    <div className="form-group">
+                      <label>Your Rating</label>
+                      <div className="rating-input">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <FaStar
+                            key={star}
+                            className={`star-input ${
+                              star <= reviewFormData.rating ? "active" : ""
+                            }`}
+                            onClick={() =>
+                              setReviewFormData({
+                                ...reviewFormData,
+                                rating: star,
+                              })
+                            }
+                          />
+                        ))}
+                        <span className="rating-text">
+                          {reviewFormData.rating} star
+                          {reviewFormData.rating !== 1 ? "s" : ""}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="form-group">
+                      <label>Your Review</label>
+                      <textarea
                         value={reviewFormData.comment}
-                        onChange={(e) => setReviewFormData({...reviewFormData, comment: e.target.value})}
+                        onChange={(e) =>
+                          setReviewFormData({
+                            ...reviewFormData,
+                            comment: e.target.value,
+                          })
+                        }
                         placeholder="Share your experience with this tour..."
                         rows="5"
                         required
                         minLength="10"
-                    />
-                    <small>{reviewFormData.comment.length} characters (minimum 10)</small>
-                </div>
+                      />
+                      <small>
+                        {reviewFormData.comment.length} characters (minimum 10)
+                      </small>
+                    </div>
 
-                <div className="form-actions">
-                    <button 
-                        type="button" 
+                    <div className="form-actions">
+                      <button
+                        type="button"
                         className="btn-cancel"
                         onClick={() => {
-                            setShowReviewForm(false);
-                            setReviewFormData({ rating: 5, comment: '' });
+                          setShowReviewForm(false);
+                          setReviewFormData({ rating: 5, comment: "" });
                         }}
-                    >
+                      >
                         Cancel
-                    </button>
-                    <button 
-                        type="submit" 
+                      </button>
+                      <button
+                        type="submit"
                         className="btn-submit"
                         disabled={reviewSubmitting}
-                    >
-                        {reviewSubmitting ? 'Submitting...' : 'Submit Review'}
-                    </button>
+                      >
+                        {reviewSubmitting ? "Submitting..." : "Submit Review"}
+                      </button>
+                    </div>
+                  </form>
                 </div>
-            </form>
-        </div>
-    )}
+              )}
 
-    {/* Reviews List */}
-    <div className="reviews-list">
-        {reviews.length === 0 ? (
-            <div className="no-reviews">
-                <p>No reviews yet. Be the first to review this tour!</p>
-            </div>
-        ) : (
-            reviews.map(review => (
-                <div key={review.id} className="review-card">
-                    <div className="review-header">
+              <div className="reviews-list">
+                {reviews.length === 0 ? (
+                  <div className="no-reviews">
+                    <p>No reviews yet. Be the first to review this tour!</p>
+                  </div>
+                ) : (
+                  reviews.map((review) => (
+                    <div key={review.id} className="review-card">
+                      <div className="review-header">
                         <div className="reviewer-info">
-                            <div className="reviewer-avatar">
-                                {review.user.name.charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                                <h4>{review.user.name}</h4>
-                                <p className="review-date">{formatDate(review.createdAt)}</p>
-                            </div>
+                          <div className="reviewer-avatar">
+                            {review.user.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <h4>{review.user.name}</h4>
+                            <p className="review-date">
+                              {formatDate(review.createdAt)}
+                            </p>
+                          </div>
                         </div>
                         <div className="review-rating">
-                            {renderStars(review.rating)}
+                          {renderStars(review.rating)}
                         </div>
+                      </div>
+                      <p className="review-comment">{review.comment}</p>
                     </div>
-                    <p className="review-comment">{review.comment}</p>
-                </div>
-            ))
-        )}
-    </div>
-</div>
+                  ))
+                )}
+              </div>
+            </div>
 
             <div className="tour-meta">
               <div className="meta-item">
@@ -389,7 +662,6 @@ const TourDetails = () => {
                 </div>
               </div>
             </div>
-      
 
             <div className="tour-description-section">
               <h2>About This Tour</h2>
@@ -433,7 +705,7 @@ const TourDetails = () => {
                 max={tour.availableSeats}
                 value={numberOfSeats}
                 onChange={(e) => setNumberOfSeats(parseInt(e.target.value))}
-                disabled={tour.availableSeats === 0}
+                disabled={tour.availableSeats === 0 || paymentMode}
               />
 
               <div className="total-price">
@@ -446,24 +718,29 @@ const TourDetails = () => {
               <button
                 onClick={handleBooking}
                 disabled={
-                  bookingLoading || tour.availableSeats === 0 || bookingSuccess
+                  bookingLoading ||
+                  tour.availableSeats === 0 ||
+                  bookingSuccess ||
+                  paymentMode
                 }
                 className="btn-book"
               >
                 {bookingLoading
-                  ? "Booking..."
+                  ? "Processing..."
+                  : paymentMode
+                  ? "Payment in Progress..."
                   : tour.availableSeats === 0
                   ? "Sold Out"
                   : bookingSuccess
-                  ? "Booked!"
-                  : "Book Now"}
+                  ? "Booking Created!"
+                  : "Book Now & Pay"}
               </button>
             </div>
 
             <div className="booking-info">
+              <p>✓ Secure payment via Razorpay</p>
               <p>✓ Instant confirmation</p>
               <p>✓ Free cancellation up to 24 hours</p>
-              <p>✓ Reserve now & pay later</p>
             </div>
           </div>
         </div>

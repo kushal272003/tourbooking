@@ -14,11 +14,17 @@ import Tours from "./pages/Tours";
 import TourDetails from "./pages/TourDetails";
 import MyBookings from "./pages/MyBookings";
 import AdminDashboard from "./pages/AdminDashboard";
-import CreateTour from "./pages/CreateTour"; // Import
-import EditTour from "./pages/EditTour"; // Import
+import CreateTour from "./pages/CreateTour";
+import EditTour from "./pages/EditTour";
 import AllBookings from "./pages/AllBookings";
 import MyWishlist from "./pages/MyWishlist";
 import UserProfile from "./pages/UserProfile";
+
+// NEW: Payment related imports
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentFailure from "./pages/PaymentFailure";
+import PaymentHistory from "./pages/PaymentHistory";
+import Footer from "./components/Footer";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -37,6 +43,7 @@ const Layout = ({ children }) => {
     <>
       <Navbar />
       {children}
+      <Footer />
     </>
   );
 };
@@ -51,6 +58,16 @@ function App() {
           <Route path="/register" element={<Register />} />
 
           {/* Public Pages */}
+          {/* All Tours (no filter) */}
+
+          <Route
+            path="/tours/:id"
+            element={
+              <Layout>
+                <TourDetails />
+              </Layout>
+            }
+          />
           <Route
             path="/tours"
             element={
@@ -59,6 +76,17 @@ function App() {
               </Layout>
             }
           />
+
+          {/* Filtered Tours by Category */}
+        <Route
+  path="/tours/category/:category"
+  element={
+    <Layout>
+      <Tours />
+    </Layout>
+  }
+/>
+
 
           <Route
             path="/tours/:id"
@@ -92,6 +120,62 @@ function App() {
             }
           />
 
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <UserProfile />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/my-wishlist"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <MyWishlist />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* NEW: Payment Routes (Protected) */}
+          <Route
+            path="/payment-success"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <PaymentSuccess />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/payment-failure"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <PaymentFailure />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/payment-history"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <PaymentHistory />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
           {/* Admin Routes */}
           <Route
             path="/admin/dashboard"
@@ -99,17 +183,6 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <AdminDashboard />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <UserProfile />
                 </Layout>
               </ProtectedRoute>
             }
@@ -136,22 +209,13 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/admin/bookings"
             element={
               <ProtectedRoute>
                 <Layout>
                   <AllBookings />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/my-wishlist"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <MyWishlist />
                 </Layout>
               </ProtectedRoute>
             }

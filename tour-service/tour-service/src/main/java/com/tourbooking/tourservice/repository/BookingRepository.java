@@ -2,7 +2,11 @@ package com.tourbooking.tourservice.repository;
 
 import com.tourbooking.tourservice.model.Booking;
 import com.tourbooking.tourservice.model.BookingStatus;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -27,4 +31,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     // Payment status se filter
     List<Booking> findByPaymentStatus(String paymentStatus);
+
+
+
+
 }

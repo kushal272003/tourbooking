@@ -25,6 +25,7 @@ const AdminDashboard = () => {
     totalRevenue: 0,
     pendingBookings: 0,
   });
+
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -35,14 +36,15 @@ const AdminDashboard = () => {
       return;
     }
     fetchDashboardData();
-  }, []);
+  }, [isAdmin, navigate]);
 
+  // ✅ Single API function for all dashboard data
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
       // Fetch tours
       const toursData = await tourService.getAllTours();
-      setTours(toursData);
+      setTours(Array.isArray(toursData) ? toursData : []);
 
       // Fetch bookings
       const bookingsData = await bookingService.getAllBookings();
@@ -59,8 +61,8 @@ const AdminDashboard = () => {
       setStats({
         totalTours: toursData.length,
         totalBookings: bookingsData.length,
-        totalRevenue: totalRevenue,
-        pendingBookings: pendingBookings,
+        totalRevenue,
+        pendingBookings,
       });
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -69,15 +71,14 @@ const AdminDashboard = () => {
     }
   };
 
+  // ✅ Handle Delete Tour
   const handleDeleteTour = async (tourId) => {
-    if (!window.confirm("Are you sure you want to delete this tour?")) {
-      return;
-    }
+    if (!window.confirm("Are you sure you want to delete this tour?")) return;
 
     try {
       await tourService.deleteTour(tourId);
       alert("Tour deleted successfully!");
-      fetchDashboardData(); // Refresh list
+      fetchDashboardData(); // refresh after delete
     } catch (error) {
       alert(error.response?.data?.message || "Failed to delete tour");
     }
@@ -90,12 +91,13 @@ const AdminDashboard = () => {
   return (
     <div className="admin-dashboard">
       <div className="dashboard-container">
+        {/* Header */}
         <div className="dashboard-header">
           <h1>Admin Dashboard</h1>
-          <p>Welcome back, {user.name}!</p>
+          <p>Welcome back, {user?.name || "Admin"}!</p>
         </div>
 
-        {/* Stats Cards */}
+        {/* Stats Section */}
         <div className="stats-grid">
           <div className="stat-card">
             <div className="stat-icon tours">
@@ -137,6 +139,7 @@ const AdminDashboard = () => {
             </div>
           </div>
         </div>
+
         {/* Quick Actions */}
         <div className="quick-actions">
           <button
@@ -162,7 +165,7 @@ const AdminDashboard = () => {
           </button>
         </div>
 
-        {/* Tours Management Section */}
+        {/* Manage Tours */}
         <div className="section-header">
           <h2>Manage Tours</h2>
           <button
@@ -187,6 +190,7 @@ const AdminDashboard = () => {
                 <th>Actions</th>
               </tr>
             </thead>
+
             <tbody>
               {tours.map((tour) => (
                 <tr key={tour.id}>

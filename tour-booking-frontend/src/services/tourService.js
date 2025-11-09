@@ -84,7 +84,116 @@ const tourService = {
             }
         });
         return response.data;
+    },
+     advancedSearch: async (filters) => {
+        try {
+            // Build query parameters
+            const params = new URLSearchParams();
+
+            if (filters.keyword) params.append('keyword', filters.keyword);
+            if (filters.minPrice !== null && filters.minPrice !== undefined) 
+                params.append('minPrice', filters.minPrice);
+            if (filters.maxPrice !== null && filters.maxPrice !== undefined) 
+                params.append('maxPrice', filters.maxPrice);
+            if (filters.minDuration !== null && filters.minDuration !== undefined) 
+                params.append('minDuration', filters.minDuration);
+            if (filters.maxDuration !== null && filters.maxDuration !== undefined) 
+                params.append('maxDuration', filters.maxDuration);
+            if (filters.startDate) params.append('startDate', filters.startDate);
+            if (filters.endDate) params.append('endDate', filters.endDate);
+            if (filters.availableOnly) params.append('availableOnly', filters.availableOnly);
+            if (filters.sortBy) params.append('sortBy', filters.sortBy);
+
+            const response = await axios.get(
+                `${API_BASE_URL}/tours/advanced-search?${params.toString()}`
+            );
+            
+            console.log('Advanced search response:', response.data);
+            return response.data;
+
+        } catch (error) {
+            console.error('Error in advanced search:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Get price range (min and max) for slider
+     * @returns {Promise<Object>} - { minPrice, maxPrice }
+     */
+    getPriceRange: async () => {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/tours/price-range-data`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching price range:', error);
+            return { minPrice: 0, maxPrice: 100000 }; // Default fallback
+        }
+    },
+
+    /**
+     * Get all unique destinations for dropdown
+     * @returns {Promise<Array>} - Array of destination strings
+     */
+    getAllDestinations: async () => {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/tours/destinations`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching destinations:', error);
+            return [];
+        }
+    },
+
+
+    getToursByCategory: async (category) => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/tours/category/${category}`);
+        return response.data;
+    } catch (error) {
+        console.error(`Error fetching tours by category (${category}):`, error);
+        throw error;
     }
+},
+
+
+
+    /**
+     * Get tours by duration range
+     * @param {number} minDuration - Minimum duration
+     * @param {number} maxDuration - Maximum duration
+     * @returns {Promise<Array>} - Array of tours
+     */
+    getToursByDurationRange: async (minDuration, maxDuration) => {
+        try {
+            const response = await axios.get(
+                `${API_BASE_URL}/tours/duration-range?minDuration=${minDuration}&maxDuration=${maxDuration}`
+            );
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching tours by duration:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Get tours by date range
+     * @param {string} startDate - Start date (yyyy-MM-dd)
+     * @param {string} endDate - End date (yyyy-MM-dd)
+     * @returns {Promise<Array>} - Array of tours
+     */
+    getToursByDateRange: async (startDate, endDate) => {
+        try {
+            const response = await axios.get(
+                `${API_BASE_URL}/tours/date-range?startDate=${startDate}&endDate=${endDate}`
+            );
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching tours by date range:', error);
+            throw error;
+        }
+    }
+
 };
 
 export default tourService;

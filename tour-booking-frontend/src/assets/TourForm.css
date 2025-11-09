@@ -182,3 +182,43 @@
         width: 100%;
     }
 }
+
+
+/* --- Category dropdown styling --- */
+.form-group select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #d0d0d0;
+  border-radius: 8px;
+  background-color: #fff;
+  font-size: 15px;
+  color: #333;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  outline: none;
+  appearance: none; /* remove default arrow for consistency */
+  background-image: linear-gradient(45deg, transparent 50%, #007bff 50%),
+                    linear-gradient(135deg, #007bff 50%, transparent 50%);
+  background-position: calc(100% - 20px) calc(1em + 4px),
+                       calc(100% - 15px) calc(1em + 4px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.form-group select:hover {
+  border-color: #007bff;
+}
+
+.form-group select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.4);
+}
+
+/* optional: label styling improvement */
+.form-group label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 6px;
+  font-size: 14px;
+  display: block;
+}

@@ -6,6 +6,7 @@ import com.tourbooking.tourservice.model.BookingStatus;
 import com.tourbooking.tourservice.model.Tour;
 import com.tourbooking.tourservice.model.User;
 import com.tourbooking.tourservice.repository.BookingRepository;
+import com.tourbooking.tourservice.repository.PaymentRepository;
 import com.tourbooking.tourservice.repository.TourRepository;
 import com.tourbooking.tourservice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,10 @@ public class BookingService {
     @Autowired
     private TourRepository tourRepository;
 
-    // Naya booking create karna
+    @Autowired
+    private PaymentRepository paymentRepository;
+
+    // FIXED: Naya booking create karna (PENDING status, seats deduct NAHI hote)
     @Transactional
     public Booking createBooking(Long userId, Long tourId, Integer numberOfSeats) {
         User user = userRepository.findById(userId)
@@ -41,6 +45,7 @@ public class BookingService {
         Tour tour = tourRepository.findById(tourId)
                 .orElseThrow(() -> new ResourceNotFoundException("Tour not found with id: " + tourId));
 
+        // Check availability
         if (tour.getAvailableSeats() < numberOfSeats) {
             throw new BadRequestException("Not enough seats available! Only " +
                     tour.getAvailableSeats() + " seats left.");
@@ -55,14 +60,15 @@ public class BookingService {
         booking.setTotalPrice(totalPrice);
         booking.setStatus(BookingStatus.PENDING);
 
-        tour.setAvailableSeats(tour.getAvailableSeats() - numberOfSeats);
-        tourRepository.save(tour);
+        // IMPORTANT: Seats DEDUCT NAHI karte yahan
+        // Seats sirf confirmBooking() me deduct honge
 
         Booking savedBooking = bookingRepository.save(booking);
 
-        // Email send karna
+        // Email send karna (pending booking notification)
         emailService.sendBookingConfirmationEmail(savedBooking);
 
+        System.out.println("✅ Booking created (PENDING) - Seats NOT deducted yet");
         return savedBooking;
     }
 
@@ -91,6 +97,7 @@ public class BookingService {
         return bookingRepository.findByStatus(status);
     }
 
+    // FIXED: Booking confirm karna (SEATS YAHAN DEDUCT HOTE HAIN)
     @Transactional
     public Booking confirmBooking(Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
@@ -100,11 +107,26 @@ public class BookingService {
             throw new BadRequestException("Only PENDING bookings can be confirmed!");
         }
 
+        Tour tour = booking.getTour();
+
+        // Check seats still available
+        if (tour.getAvailableSeats() < booking.getNumberOfSeats()) {
+            throw new BadRequestException("Seats no longer available!");
+        }
+
+        // IMPORTANT: Seats YAHAN deduct hote hain (payment success ke baad)
+        tour.setAvailableSeats(tour.getAvailableSeats() - booking.getNumberOfSeats());
+        tourRepository.save(tour);
+
         booking.setStatus(BookingStatus.CONFIRMED);
         booking.setPaymentStatus("PAID");
+
+        System.out.println("✅ Booking CONFIRMED - Seats deducted: " + booking.getNumberOfSeats());
+
         return bookingRepository.save(booking);
     }
 
+    // FIXED: Booking cancel karna (SEATS RESTORE HOTE HAIN agar confirm tha)
     @Transactional
     public Booking cancelBooking(Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
@@ -118,12 +140,18 @@ public class BookingService {
             throw new BadRequestException("Cannot cancel completed booking!");
         }
 
+        // IMPORTANT: Seats restore sirf agar booking CONFIRMED tha
+        if (booking.getStatus() == BookingStatus.CONFIRMED) {
+            Tour tour = booking.getTour();
+            tour.setAvailableSeats(tour.getAvailableSeats() + booking.getNumberOfSeats());
+            tourRepository.save(tour);
+            System.out.println("✅ Seats restored: " + booking.getNumberOfSeats());
+        } else {
+            // PENDING booking cancel → Seats already deducted nahi the
+            System.out.println("⚠️ PENDING booking cancelled - No seats to restore");
+        }
+
         booking.setStatus(BookingStatus.CANCELLED);
-
-        Tour tour = booking.getTour();
-        tour.setAvailableSeats(tour.getAvailableSeats() + booking.getNumberOfSeats());
-        tourRepository.save(tour);
-
         Booking savedBooking = bookingRepository.save(booking);
 
         // Cancellation email send karna
@@ -145,7 +173,10 @@ public class BookingService {
     }
 
     // Booking delete karna
+
     public void deleteBooking(Long id) {
-        bookingRepository.deleteById(id);
+        // pehle child delete karo
+        bookingRepository.deleteById(id);        // fir parent delete karo
     }
+
 }

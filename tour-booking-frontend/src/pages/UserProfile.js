@@ -14,6 +14,7 @@ import {
     FaTicketAlt,
     FaHeart,
     FaStar,
+    FaSignOutAlt,
     FaCalendar
 } from 'react-icons/fa';
 import '../assets/UserProfile.css';
@@ -354,9 +355,18 @@ const UserProfile = () => {
                                     {loading ? 'Changing...' : 'Change Password'}
                                 </button>
                             </div>
+
+                           
+ 
                         </form>
                     )}
                 </div>
+                <div className="profile-section logout-section">
+  <h2>Account</h2>
+  <button onClick={() => { logout(); navigate('/login'); }} className="btn-logout">
+    <FaSignOutAlt /> Logout
+  </button>
+</div>
             </div>
         </div>
     );

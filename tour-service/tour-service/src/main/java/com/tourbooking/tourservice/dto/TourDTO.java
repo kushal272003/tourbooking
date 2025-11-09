@@ -21,13 +21,16 @@ public class TourDTO {
     private Integer availableSeats;
     private Integer totalSeats;
     private String imageUrl;
+       // ✅ must exist
+    private String imageUrl2;  // ✅ must exist
+    private String imageUrl3;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public TourDTO() {
     }
 
-    public TourDTO(Long id, String title, String description, String destination, Double price, Integer duration, LocalDate startDate, LocalDate endDate, Integer availableSeats, Integer totalSeats, String imageUrl, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public TourDTO(Long id, String title, String description, String destination, Double price, Integer duration, LocalDate startDate, LocalDate endDate, Integer availableSeats, Integer totalSeats, String imageUrl, String imageUrl2, String imageUrl3, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -39,9 +42,13 @@ public class TourDTO {
         this.availableSeats = availableSeats;
         this.totalSeats = totalSeats;
         this.imageUrl = imageUrl;
+        this.imageUrl2 = imageUrl2;
+        this.imageUrl3 = imageUrl3;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
+
+
 
     public Long getId() {
         return id;
@@ -129,6 +136,22 @@ public class TourDTO {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public String getImageUrl2() {
+        return imageUrl2;
+    }
+
+    public void setImageUrl2(String imageUrl2) {
+        this.imageUrl2 = imageUrl2;
+    }
+
+    public String getImageUrl3() {
+        return imageUrl3;
+    }
+
+    public void setImageUrl3(String imageUrl3) {
+        this.imageUrl3 = imageUrl3;
     }
 
     public LocalDateTime getCreatedAt() {

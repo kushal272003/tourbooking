@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaMapMarkerAlt,
@@ -6,30 +6,28 @@ import {
   FaClock,
   FaUsers,
   FaRupeeSign,
+  FaStar,
+  FaHeart,
+  FaRegHeart,
 } from "react-icons/fa";
 import "../assets/TourCard.css";
-import { useState, useEffect } from "react";
 import reviewService from "../services/reviewService";
-import { FaStar } from "react-icons/fa";
-import { FaHeart, FaRegHeart } from "react-icons/fa";
 import wishlistService from "../services/wishlistService";
 import { useAuth } from "../context/AuthContext";
 
 const TourCard = ({ tour }) => {
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
 
-  const handleViewDetails = () => {
-    navigate(`/tours/${tour.id}`);
-  };
   const [avgRating, setAvgRating] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
+  const [isInWishlist, setIsInWishlist] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     fetchRating();
   }, [tour.id]);
-  const { user, isAuthenticated } = useAuth();
-  const [isInWishlist, setIsInWishlist] = useState(false);
-  const [wishlistLoading, setWishlistLoading] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -56,8 +54,12 @@ const TourCard = ({ tour }) => {
     }
   };
 
+  const handleViewDetails = (id) => {
+    navigate(`/tours/${id}`);
+  };
+
   const handleWishlistToggle = async (e) => {
-    e.stopPropagation(); // Prevent card click
+    e.stopPropagation();
 
     if (!isAuthenticated) {
       alert("Please login to add to wishlist");
@@ -82,46 +84,70 @@ const TourCard = ({ tour }) => {
     }
   };
 
-  // Default image agar imageUrl nahi hai
-  const imageUrl =
-    tour.imageUrl || "https://via.placeholder.com/400x250?text=Tour+Image";
+  // Image error handler
+  const handleImageError = (e) => {
+    console.error("Image failed to load:", tour.imageUrl);
+    setImageError(true);
+    // Fallback to a nice placeholder image
+    e.target.src = "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=250&fit=crop";
+  };
+
+  // Get proper image URL
+  const getImageUrl = () => {
+    if (!tour.imageUrl || imageError) {
+      return "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=250&fit=crop";
+    }
+
+    // If relative path, add backend URL
+    if (tour.imageUrl.startsWith('/uploads') || tour.imageUrl.startsWith('/images')) {
+      return `http://localhost:8080${tour.imageUrl}`;
+    }
+
+    // If it's already a full URL, return as is
+    return tour.imageUrl;
+  };
 
   return (
     <div className="tour-card">
-      <div className="tour-image">
-        <div className="tour-image">
-          <img src={imageUrl} alt={tour.title} />
-          <div className="tour-badge">
-            {tour.availableSeats > 0 ? (
-              <span className="badge-available">Available</span>
-            ) : (
-              <span className="badge-sold-out">Sold Out</span>
-            )}
-          </div>
-
-          {/* Wishlist Heart Icon */}
-          {isAuthenticated && (
-            <button
-              className={`wishlist-btn ${isInWishlist ? "active" : ""}`}
-              onClick={handleWishlistToggle}
-              disabled={wishlistLoading}
-            >
-              {isInWishlist ? <FaHeart /> : <FaRegHeart />}
-            </button>
-          )}
-        </div>
-        <img src={imageUrl} alt={tour.title} />
+      <div className="tour-image"  style={{ height: '280px', position: 'relative' }}>
+        <img 
+         src={getImageUrl()} 
+  alt={tour.title}
+  onError={handleImageError}
+  loading="lazy"
+  style={{
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    objectPosition: 'center',
+    display: 'block'
+  }}
+        />
+        
         <div className="tour-badge">
           {tour.availableSeats > 0 ? (
-            <span className="badge-available">Available</span>
+            <span className="badge-available">AVAILABLE</span>
           ) : (
-            <span className="badge-sold-out">Sold Out</span>
+            <span className="badge-sold-out">SOLD OUT</span>
           )}
         </div>
+
+        {/* Wishlist Heart Icon */}
+        {isAuthenticated && (
+          <button
+            className={`wishlist-btn ${isInWishlist ? "active" : ""}`}
+            onClick={handleWishlistToggle}
+            disabled={wishlistLoading}
+            aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+          >
+            {isInWishlist ? <FaHeart /> : <FaRegHeart />}
+          </button>
+        )}
       </div>
 
       <div className="tour-content">
         <h3 className="tour-title">{tour.title}</h3>
+
         {/* Rating Display */}
         {reviewCount > 0 && (
           <div className="tour-rating">
@@ -168,7 +194,10 @@ const TourCard = ({ tour }) => {
             <span className="per-person">/person</span>
           </div>
 
-          <button className="btn-view-details" onClick={handleViewDetails}>
+          <button
+            className="btn-view-details"
+            onClick={() => handleViewDetails(tour.id)}
+          >
             View Details
           </button>
         </div>

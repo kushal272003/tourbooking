@@ -16,9 +16,11 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "booking_id", nullable = false)
     private Booking booking;
+
+
 
     @Column(name = "razorpay_order_id", length = 100)
     private String razorpayOrderId;

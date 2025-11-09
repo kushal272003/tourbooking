@@ -17,4 +17,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     // Razorpay Payment ID se payment find karna
     Optional<Payment> findByRazorpayPaymentId(String razorpayPaymentId);
+
+    void deleteByBookingId(Long id);
 }

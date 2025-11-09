@@ -60,16 +60,18 @@ public class PaymentService {
         // Amount ko paise me convert (1 rupee = 100 paise)
         int amountInPaise = (int) (booking.getTotalPrice() * 100);
 
-        // Order options
+        // FIXED: Simple order options (NO method parameter)
         JSONObject orderRequest = new JSONObject();
         orderRequest.put("amount", amountInPaise);
         orderRequest.put("currency", currency);
         orderRequest.put("receipt", "BOOKING_" + bookingId);
-        orderRequest.put("notes", new JSONObject()
-                .put("bookingId", bookingId)
-                .put("tourTitle", booking.getTour().getTitle())
-                .put("userName", booking.getUser().getName())
-        );
+
+        // Notes for reference
+        JSONObject notes = new JSONObject();
+        notes.put("bookingId", bookingId);
+        notes.put("tourTitle", booking.getTour().getTitle());
+        notes.put("userName", booking.getUser().getName());
+        orderRequest.put("notes", notes);
 
         // Razorpay pe order create
         Order order = razorpayClient.orders.create(orderRequest);
