@@ -1,0 +1,252 @@
+/* Grid Container for Cards */
+.tour-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.tour-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.tour-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.tour-image {
+  width: 100% !important;
+  height: 260px!important;      /* isko 240 / 260 / 300 kar sakte ho */
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+
+
+.tour-image img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  display: block;
+}
+
+
+.tour-image img.portrait {
+  object-fit: contain;
+  background-color: #f5f5f5;
+}
+
+
+.tour-card:hover .tour-image img {
+    transform: scale(1.05);
+}
+
+.tour-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 3;
+}
+
+.badge-available {
+    background: #4caf50;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.badge-sold-out {
+    background: #f44336;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.tour-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.tour-title {
+    font-size: 20px;
+    color: #333;
+    margin-bottom: 15px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.tour-rating {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.star-icon {
+    color: #ffc107;
+    font-size: 16px;
+}
+
+.rating-value {
+    font-weight: 700;
+    color: #333;
+    font-size: 16px;
+}
+
+.rating-count {
+    color: #999;
+    font-size: 14px;
+}
+
+.tour-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #666;
+}
+
+.info-item .icon {
+    color: #667eea;
+    font-size: 14px;
+}
+
+.tour-description {
+    color: #777;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 15px;
+    flex-grow: 1;
+}
+
+.tour-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    margin-top: auto;
+}
+
+.tour-price {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.rupee-icon {
+    color: #667eea;
+    font-size: 18px;
+}
+
+.price {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+}
+
+.per-person {
+    font-size: 12px;
+    color: #999;
+}
+
+.btn-view-details {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-view-details:hover {
+    transform: scale(1.05);
+}
+
+.wishlist-btn {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    width: 45px;
+    height: 45px;
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 3;
+}
+
+.wishlist-btn svg {
+    font-size: 20px;
+    color: #999;
+    transition: all 0.3s;
+}
+
+.wishlist-btn:hover svg {
+    color: #ff6b6b;
+    transform: scale(1.2);
+}
+
+.wishlist-btn.active svg {
+    color: #ff6b6b;
+    animation: heartBeat 0.3s ease;
+}
+
+.wishlist-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+@keyframes heartBeat {
+    0%, 100% { 
+        transform: scale(1); 
+    }
+    50% { 
+        transform: scale(1.3); 
+    }
+}
+
+@media (max-width: 768px) {
+    .tour-image {
+        height: 240px;
+    }
+    .tour-grid {
+        grid-template-columns: 1fr;
+    }
+}

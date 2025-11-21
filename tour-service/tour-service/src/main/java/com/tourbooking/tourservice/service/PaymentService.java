@@ -1,0 +1,218 @@
+package com.tourbooking.tourservice.service;
+
+import com.razorpay.Order;
+import com.razorpay.RazorpayClient;
+import com.razorpay.RazorpayException;
+import com.razorpay.Utils;
+import com.tourbooking.tourservice.dto.PaymentResponse;
+import com.tourbooking.tourservice.dto.PaymentVerificationRequest;
+import com.tourbooking.tourservice.exception.BadRequestException;
+import com.tourbooking.tourservice.exception.ResourceNotFoundException;
+import com.tourbooking.tourservice.model.Booking;
+import com.tourbooking.tourservice.model.BookingStatus;
+import com.tourbooking.tourservice.model.Payment;
+import com.tourbooking.tourservice.model.Tour;
+import com.tourbooking.tourservice.repository.BookingRepository;
+import com.tourbooking.tourservice.repository.PaymentRepository;
+import com.tourbooking.tourservice.repository.TourRepository;
+import jakarta.persistence.EntityManager;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class PaymentService {
+
+    @Autowired
+    private PaymentRepository paymentRepository;
+
+    @Autowired
+    private BookingRepository bookingRepository;
+
+    @Autowired
+    private TourRepository tourRepository;
+
+    @Autowired
+    private EntityManager entityManager;  // ✅ ADD THIS
+
+
+    @Value("${razorpay.key.id}")
+    private String razorpayKeyId;
+
+    @Value("${razorpay.key.secret}")
+    private String razorpayKeySecret;
+
+    @Value("${razorpay.currency}")
+    private String currency;
+
+    @Value("${razorpay.company.name}")
+    private String companyName;
+
+    // Razorpay order create karna
+    @Transactional
+    public PaymentResponse createPaymentOrder(Long bookingId) throws RazorpayException {
+        // Booking find karna
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
+
+        // Check booking already paid hai ya nahi
+        if ("PAID".equals(booking.getPaymentStatus())) {
+            throw new BadRequestException("Booking is already paid!");
+        }
+
+        // Razorpay client initialize
+        RazorpayClient razorpayClient = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
+
+        // Amount ko paise me convert (1 rupee = 100 paise)
+        int amountInPaise = (int) (booking.getTotalPrice() * 100);
+
+        // FIXED: Simple order options (NO method parameter)
+        JSONObject orderRequest = new JSONObject();
+        orderRequest.put("amount", amountInPaise);
+        orderRequest.put("currency", currency);
+        orderRequest.put("receipt", "BOOKING_" + bookingId);
+
+        // Notes for reference
+        JSONObject notes = new JSONObject();
+        notes.put("bookingId", bookingId);
+        notes.put("tourTitle", booking.getTour().getTitle());
+        notes.put("userName", booking.getUser().getName());
+        orderRequest.put("notes", notes);
+
+        // Razorpay pe order create
+        Order order = razorpayClient.orders.create(orderRequest);
+
+        // Payment record database me save
+        Payment payment = new Payment();
+        payment.setBooking(booking);
+        payment.setRazorpayOrderId(order.get("id"));
+        payment.setAmount(booking.getTotalPrice());
+        payment.setCurrency(currency);
+        payment.setStatus("CREATED");
+
+        paymentRepository.save(payment);
+
+        // Response prepare
+        PaymentResponse response = new PaymentResponse();
+        response.setOrderId(order.get("id"));
+        response.setCurrency(currency);
+        response.setAmount(amountInPaise);
+        response.setKey(razorpayKeyId);
+        response.setBookingId(String.valueOf(bookingId));
+        response.setUserName(booking.getUser().getName());
+        response.setUserEmail(booking.getUser().getEmail());
+        response.setUserPhone(booking.getUser().getPhone());
+
+        return response;
+    }
+
+    // Payment verify karna (after successful payment from frontend)
+    @Transactional
+    public String verifyPayment(PaymentVerificationRequest request) {
+        try {
+            System.out.println("🔍 ========== PAYMENT VERIFICATION START ==========");
+
+            // Payment find karna
+            Payment payment = paymentRepository.findByRazorpayOrderId(request.getRazorpayOrderId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Payment not found!"));
+
+            // Signature verify karna
+            JSONObject options = new JSONObject();
+            options.put("razorpay_order_id", request.getRazorpayOrderId());
+            options.put("razorpay_payment_id", request.getRazorpayPaymentId());
+            options.put("razorpay_signature", request.getRazorpaySignature());
+
+            boolean isValidSignature = Utils.verifyPaymentSignature(options, razorpayKeySecret);
+
+            if (isValidSignature) {
+                System.out.println("✅ Step 1: Signature verified!");
+
+                // Update payment
+                payment.setRazorpayPaymentId(request.getRazorpayPaymentId());
+                payment.setRazorpaySignature(request.getRazorpaySignature());
+                payment.setStatus("SUCCESS");
+                paymentRepository.save(payment);
+                entityManager.flush();  // ✅ FIX 1: Force flush
+                System.out.println("✅ Step 2: Payment updated to SUCCESS");
+
+                // Get booking with eager loading
+                Booking booking = payment.getBooking();
+
+                if (booking.getStatus() == BookingStatus.PENDING) {
+                    System.out.println("🔄 Step 3: Confirming booking...");
+
+                    // ✅ FIX 2: Fetch tour separately to avoid lazy loading
+                    Tour tour = tourRepository.findById(booking.getTour().getId())
+                            .orElseThrow(() -> new ResourceNotFoundException("Tour not found"));
+
+                    // Check and deduct seats
+                    if (tour.getAvailableSeats() >= booking.getNumberOfSeats()) {
+                        tour.setAvailableSeats(tour.getAvailableSeats() - booking.getNumberOfSeats());
+                        tourRepository.save(tour);
+                        entityManager.flush();  // ✅ FIX 3: Force flush
+                        System.out.println("✅ Step 4: Seats deducted: " + booking.getNumberOfSeats());
+                    } else {
+                        throw new BadRequestException("Seats no longer available!");
+                    }
+
+                    // Update booking
+                    booking.setPaymentStatus("PAID");
+                    booking.setStatus(BookingStatus.CONFIRMED);
+                    bookingRepository.save(booking);
+                    entityManager.flush();  // ✅ FIX 4: Force flush
+                    System.out.println("✅ Step 5: Booking CONFIRMED!");
+
+                } else {
+                    System.out.println("⚠️ Booking already confirmed");
+                }
+
+                System.out.println("✅ Step 6: All changes committed!");
+                return "Payment verified and booking confirmed successfully!";
+
+            } else {
+                payment.setStatus("FAILED");
+                paymentRepository.save(payment);
+                throw new BadRequestException("Invalid payment signature!");
+            }
+
+        } catch (RazorpayException e) {
+            System.err.println("❌ Razorpay Exception: " + e.getMessage());
+            throw new BadRequestException("Payment verification failed: " + e.getMessage());
+        } catch (Exception e) {
+            // ✅ FIX 5: Catch and log detailed error
+            System.err.println("❌ Transaction Error: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to confirm booking: " + e.getMessage());
+        }
+    }
+    // Payment failed handler
+    @Transactional
+    public void handlePaymentFailure(String orderId, String reason) {
+        Payment payment = paymentRepository.findByRazorpayOrderId(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not found!"));
+
+        payment.setStatus("FAILED");
+        paymentRepository.save(payment);
+    }
+
+    // Sab payments list
+    public List<Payment> getAllPayments() {
+        return paymentRepository.findAll();
+    }
+
+    // Payment by ID
+    public Optional<Payment> getPaymentById(Long id) {
+        return paymentRepository.findById(id);
+    }
+
+    // Booking ki payment find karna
+    public Optional<Payment> getPaymentByBookingId(Long bookingId) {
+        return paymentRepository.findByBookingId(bookingId);
+    }
+}

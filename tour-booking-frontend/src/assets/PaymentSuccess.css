@@ -1,0 +1,338 @@
+/* =========================================================
+   PAGE WRAPPER
+========================================================= */
+.payment-result-page {
+    min-height: 100vh;
+    background: #f3f4f6;
+    padding: 40px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+/* =========================================================
+   MAIN CONTAINER
+========================================================= */
+.payment-result-container {
+    width: 100%;
+    max-width: 650px;
+    background: #fff;
+    padding: 35px;
+    border-radius: 16px;
+    box-shadow: 0 8px 35px rgba(0, 0, 0, 0.12);
+    text-align: center;
+    position: relative;
+}
+
+.payment-result-container.success {
+    border-top: 6px solid #4caf50;
+}
+
+/* =========================================================
+   SUCCESS ANIMATION
+========================================================= */
+.success-animation {
+    margin-bottom: 25px;
+    position: relative;
+}
+
+.success-checkmark svg {
+    color: #4caf50;
+    font-size: 75px;
+    animation: popIn 0.6s ease-out forwards;
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.2); opacity: 0; }
+    80% { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Confetti */
+.success-confetti {
+    position: absolute;
+    top: 0;
+    left: 50%;
+}
+
+.confetti {
+    width: 10px;
+    height: 18px;
+    background: #ffcb3c;
+    position: absolute;
+    animation: confettiDrop 1.4s ease-out forwards;
+    border-radius: 2px;
+}
+
+.confetti:nth-child(2) { left: -20px; background: #4caf50; animation-delay: 0.2s; }
+.confetti:nth-child(3) { left: 20px; background: #ff5252; animation-delay: 0.1s; }
+.confetti:nth-child(4) { left: -40px; background: #42a5f5; animation-delay: 0.3s; }
+.confetti:nth-child(5) { left: 40px; background: #ab47bc; animation-delay: 0.15s; }
+
+@keyframes confettiDrop {
+    0% { opacity: 1; transform: translateY(-20px) rotate(0); }
+    100% { opacity: 0; transform: translateY(80px) rotate(180deg); }
+}
+
+/* =========================================================
+   TITLES
+========================================================= */
+.success-title {
+    font-size: 30px;
+    font-weight: 700;
+    color: #2e7d32;
+    margin-bottom: 10px;
+}
+
+.success-subtitle {
+    color: #555;
+    font-size: 16px;
+    margin-bottom: 25px;
+}
+
+/* =========================================================
+   WARNING MESSAGE
+========================================================= */
+.warning-message {
+    background: #fff3cd;
+    color: #856404;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid #ffd45e;
+}
+
+/* =========================================================
+   DETAILS CARD (PAYMENT & BOOKING)
+========================================================= */
+.payment-details-card,
+.booking-details-card {
+    background: #fafafa;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    margin-bottom: 25px;
+    text-align: left;
+}
+
+.payment-details-card h3,
+.booking-details-card h3 {
+    margin-bottom: 16px;
+    color: #333;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+/* Detail Rows */
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+}
+
+.detail-row .label {
+    font-weight: 600;
+    color: #777;
+}
+
+.detail-row .value {
+    font-weight: 500;
+    color: #333;
+}
+
+.detail-divider {
+    height: 1px;
+    background: #ddd;
+    margin: 15px 0;
+}
+
+.detail-row.total .amount {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 22px;
+    color: #2e7d32;
+    font-weight: 700;
+}
+
+/* =========================================================
+   TOUR INFO
+========================================================= */
+.tour-info-large {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.tour-image {
+    width: 120px;
+    height: 90px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.tour-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.tour-details h4 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.tour-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 14px;
+    color: #555;
+}
+
+.tour-meta svg {
+    margin-right: 5px;
+    color: #4a6ee0;
+}
+
+/* =========================================================
+   ACTION BUTTONS
+========================================================= */
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 25px 0;
+}
+
+.action-buttons button {
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    align-items: center;
+    transition: 0.3s;
+}
+
+/* Download Button */
+.btn-download {
+    background: #4caf50;
+    color: #fff;
+}
+
+.btn-download:hover {
+    background: #449a46;
+}
+
+/* View Bookings */
+.btn-view-bookings {
+    background: #667eea;
+    color: #fff;
+}
+
+.btn-view-bookings:hover {
+    background: #5569d4;
+}
+
+/* Back Home */
+.btn-home {
+    background: #e53935;
+    color: #fff;
+}
+
+.btn-home:hover {
+    background: #c62828;
+}
+
+/* Disabled */
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* =========================================================
+   NEXT STEPS
+========================================================= */
+.next-steps {
+    background: #f9f9ff;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    border-left: 4px solid #667eea;
+    text-align: left;
+}
+
+.next-steps h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.next-steps ul {
+    list-style: none;
+    padding: 0;
+}
+
+.next-steps ul li {
+    margin: 8px 0;
+    font-size: 15px;
+    color: #555;
+}
+
+/* =========================================================
+   THANK YOU
+========================================================= */
+.thank-you-message {
+    background: linear-gradient(135deg, #667eea15, #764ba215);
+    padding: 18px;
+    border-radius: 12px;
+    font-size: 16px;
+    color: #444;
+    font-weight: 500;
+}
+
+/* =========================================================
+   LOADING
+========================================================= */
+.loading-container {
+    text-align: center;
+    margin-top: 120px;
+}
+
+.spinner {
+    width: 45px;
+    height: 45px;
+    border: 5px solid #ddd;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+    margin: 0 auto 15px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* =========================================================
+   RESPONSIVENESS
+========================================================= */
+@media (max-width: 600px) {
+    .tour-info-large {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .tour-meta {
+        justify-content: center;
+    }
+
+    .payment-result-container {
+        padding: 25px;
+    }
+}

@@ -1,0 +1,431 @@
+/* =========================================================
+   PAGE WRAPPER
+========================================================= */
+.my-bookings-page {
+    min-height: 100vh;
+    background: #f5f5f5;
+    padding: 40px 20px;
+}
+
+.bookings-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+.bookings-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.bookings-header h1 {
+    font-size: 36px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.bookings-header p {
+    font-size: 16px;
+    color: #666;
+}
+
+/* =========================================================
+   NO BOOKINGS
+========================================================= */
+.no-bookings {
+    text-align: center;
+    padding: 80px 20px;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.no-bookings-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+}
+
+.no-bookings h3 {
+    font-size: 28px;
+    color: #333;
+}
+
+.no-bookings p {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.btn-explore {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    padding: 15px 40px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-explore:hover {
+    transform: scale(1.05);
+}
+
+/* =========================================================
+   LIST GRID
+========================================================= */
+.bookings-grid {
+    display: grid;
+    gap: 25px;
+}
+
+/* =========================================================
+   BOOKING CARD
+========================================================= */
+.booking-card {
+    background: #fff;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: 0.3s ease;
+}
+
+.booking-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+/* =========================================================
+   CARD HEADER
+========================================================= */
+.booking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+}
+
+.booking-id {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+/* STATUS BADGES */
+.status-badge {
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.status-pending {
+    background: #ff9800;
+}
+
+.status-confirmed {
+    background: #4caf50;
+}
+
+.status-cancelled {
+    background: #f44336;
+}
+
+.status-completed {
+    background: #2196f3;
+}
+
+/* =========================================================
+   TOUR SECTION
+========================================================= */
+.booking-tour-info {
+    display: flex;
+    gap: 20px;
+    padding: 25px;
+    border-bottom: 1px solid #eee;
+}
+
+.tour-image-small {
+    width: 150px;
+    height: 100px;
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.tour-image-small img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.tour-details-small h3 {
+    font-size: 20px;
+    margin-bottom: 12px;
+    color: #333;
+}
+
+.tour-meta-small {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.meta-item-small {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #666;
+}
+
+.meta-item-small .icon {
+    color: #667eea;
+}
+
+/* =========================================================
+   CONTACT DETAILS
+========================================================= */
+.booking-contact-info {
+    background: #f8f9fa;
+    padding: 12px 15px;
+    margin: 15px 25px 0;
+    border-radius: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.contact-item .icon {
+    color: #667eea;
+}
+
+/* =========================================================
+   PASSENGER SUMMARY
+========================================================= */
+.passengers-summary-small {
+    margin: 15px 25px;
+    background: linear-gradient(135deg, #667eea10, #764ba210);
+    border-left: 3px solid #667eea;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.passengers-summary-small h4 {
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.passengers-list-small {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.passenger-item-small {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.passenger-name {
+    font-weight: 600;
+}
+
+.passenger-age {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+/* =========================================================
+   DETAILS SECTION
+========================================================= */
+.booking-details {
+    padding: 25px;
+    background: #fafafa;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 12px 0;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.label {
+    font-weight: 600;
+    color: #666;
+}
+
+.value {
+    font-weight: 500;
+    color: #333;
+}
+
+.payment-status {
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.payment-status.paid {
+    background: #4caf50;
+    color: #fff;
+}
+
+.payment-status.pending {
+    background: #ff9800;
+    color: #fff;
+}
+
+.total-price-row {
+    border-top: 2px solid #667eea;
+    padding-top: 15px;
+    margin-top: 10px;
+}
+
+.total-price {
+    font-size: 24px;
+    font-weight: 700;
+    color: #667eea;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* =========================================================
+   CARD ACTIONS
+========================================================= */
+.booking-actions {
+    display: flex;
+    gap: 10px;
+    padding: 20px 25px;
+}
+
+.btn-view,
+.btn-cancel,
+.btn-pay {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    transition: 0.3s;
+}
+
+.btn-view {
+    background: #667eea;
+    color: #fff;
+}
+
+.btn-view:hover {
+    background: #5568d3;
+}
+
+.btn-cancel {
+    background: #f44336;
+    color: #fff;
+}
+
+.btn-cancel:hover {
+    background: #d32f2f;
+}
+
+.btn-cancel:disabled {
+    opacity: 0.6;
+}
+
+.btn-pay {
+    background: #4caf50;
+    color: #fff;
+}
+
+.btn-pay:hover {
+    background: #45a049;
+}
+
+/* =========================================================
+   ERROR + LOADING
+========================================================= */
+.error-box {
+    background: #fee;
+    color: #c33;
+    padding: 20px;
+    border-radius: 10px;
+    border-left: 4px solid #c33;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.loading-page {
+    text-align: center;
+    padding: 100px 20px;
+    font-size: 18px;
+    color: #667eea;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+@media (max-width: 768px) {
+    .booking-tour-info {
+        flex-direction: column;
+    }
+
+    .tour-image-small {
+        width: 100%;
+        height: 200px;
+    }
+
+    .tour-meta-small {
+        flex-direction: column;
+    }
+
+    .booking-actions {
+        flex-direction: column;
+    }
+
+    .detail-row {
+        flex-direction: column;
+        gap: 5px;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 600px) {
+    .booking-contact-info {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
